@@ -12,144 +12,144 @@ on:
 jobs:
 
 
-  start-runner:
-    name: Start self-hosted EC2 runner
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: start
-          github-token: ${{ secrets.GH_SECRET }}
-          ec2-image-id: ami-081c3d54ed3ae4f95
-          ec2-instance-type: t3.2xlarge
-          subnet-id: subnet-0889726d0af44a2d5
-          security-group-id: sg-06d6beebb00e6ed24
-#           iam-role-name: ec2-github-runner-policy # optional, requires additional permissions
-          aws-resource-tags: > # optional, requires additional permissions
-            [
-              {"Key": "Name", "Value": "ec2-github-runner"},
-              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
-            ]
-            
-            
-            
-
-#   build:
+#   start-runner:
+#     name: Start self-hosted EC2 runner
 #     runs-on: ubuntu-latest
+#     outputs:
+#       label: ${{ steps.start-ec2-runner.outputs.label }}
+#       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
 #     steps:
-#       - uses: actions/checkout@v2
-      
-            
-  Deploy:
-#     needs: build
-#     runs-on: ubuntu-latest
-    needs: start-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-runner.outputs.label }}
-    
-    steps:
-#       - name: Maximize build space
-#         uses: easimon/maximize-build-space@master
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
 #         with:
-#           root-reserve-mb: 60000
-#           swap-size-mb: 1024
-#           remove-dotnet: 'true'
-          
-      - name: Pull github files
-        uses: actions/checkout@v2
-        
-      - name: check storage volume
-        run: |
-          echo "Free space:"
-          df -h
-        
-        
-      - name: AWS cred
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
+#       - name: Start EC2 runner
+#         id: start-ec2-runner
+#         uses: machulav/ec2-github-runner@v2
+#         with:
+#           mode: start
+#           github-token: ${{ secrets.GH_SECRET }}
+#           ec2-image-id: ami-081c3d54ed3ae4f95
+#           ec2-instance-type: t3.2xlarge
+#           subnet-id: subnet-0889726d0af44a2d5
+#           security-group-id: sg-06d6beebb00e6ed24
+# #           iam-role-name: ec2-github-runner-policy # optional, requires additional permissions
+#           aws-resource-tags: > # optional, requires additional permissions
+#             [
+#               {"Key": "Name", "Value": "ec2-github-runner"},
+#               {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
+#             ]
             
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+            
+            
+
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
       
-      - name: Build, tag, and push image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: st_cloud_first_version
-          IMAGE_TAG: latest
-        run: |
-           ls
-           df -h
-           # Build a docker container and push it to ECR 
-           docker pull tensorflow/tensorflow
-           docker pull gettyimages/spark
-           docker pull timescale/timescaledb:latest-pg14
-           docker pull linuxserver/digikam
-           docker pull ich777/krusader
-           docker pull emekaboris/ticktokapp_copy
-           docker pull emekaboris/text_generation_with_pytorch
-           docker pull emekaboris/summarizerapi3
-           docker pull linuxserver/calibre
-           docker pull binhex/arch-krusader
-           docker pull binhex/arch-delugevpn
-           docker pull cassandra
-           docker pull ibmcom/voice-gateway-codec-g729
-           docker pull pachyderm/gpt-2-example
-           docker pull kaveenk/gpt3discord
-           docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
-           docker pull baurjan0224/gpt3
-           docker pull fillsa/powerpc-ubuntu
+            
+#   Deploy:
+# #     needs: build
+# #     runs-on: ubuntu-latest
+#     needs: start-runner # required to start the main job when the runner is ready
+#     runs-on: ${{ needs.start-runner.outputs.label }}
+    
+#     steps:
+# #       - name: Maximize build space
+# #         uses: easimon/maximize-build-space@master
+# #         with:
+# #           root-reserve-mb: 60000
+# #           swap-size-mb: 1024
+# #           remove-dotnet: 'true'
+          
+#       - name: Pull github files
+#         uses: actions/checkout@v2
+        
+#       - name: check storage volume
+#         run: |
+#           echo "Free space:"
+#           df -h
+        
+        
+#       - name: AWS cred
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#             aws-region: ${{ secrets.AWS_REGION }}
+            
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
+      
+#       - name: Build, tag, and push image to Amazon ECR
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           ECR_REPOSITORY: st_cloud_first_version
+#           IMAGE_TAG: latest
+#         run: |
+#            ls
+#            df -h
+#            # Build a docker container and push it to ECR 
+#            docker pull tensorflow/tensorflow
+#            docker pull gettyimages/spark
+#            docker pull timescale/timescaledb:latest-pg14
+#            docker pull linuxserver/digikam
+#            docker pull ich777/krusader
+#            docker pull emekaboris/ticktokapp_copy
+#            docker pull emekaboris/text_generation_with_pytorch
+#            docker pull emekaboris/summarizerapi3
+#            docker pull linuxserver/calibre
+#            docker pull binhex/arch-krusader
+#            docker pull binhex/arch-delugevpn
+#            docker pull cassandra
+#            docker pull ibmcom/voice-gateway-codec-g729
+#            docker pull pachyderm/gpt-2-example
+#            docker pull kaveenk/gpt3discord
+#            docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
+#            docker pull baurjan0224/gpt3
+#            docker pull fillsa/powerpc-ubuntu
            
            
            
            
            
            
-           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-           docker system df -v --format '{{.ImagesSize}}'
+#            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#            docker system df -v --format '{{.ImagesSize}}'
 
            
-           docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
-           docker images
-           echo "Pushing image to ECR..."
-           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+#            docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+#            docker images
+#            echo "Pushing image to ECR..."
+#            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#            echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
     
-  stop-runner:
-    name: Stop self-hosted EC2 runner
-    needs:
-      - start-runner # required to get output from the start-runner job
-      - Deploy # required to wait when the main job is done
-    runs-on: ubuntu-latest
-    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: stop
-          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          label: ${{ needs.start-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
+#   stop-runner:
+#     name: Stop self-hosted EC2 runner
+#     needs:
+#       - start-runner # required to get output from the start-runner job
+#       - Deploy # required to wait when the main job is done
+#     runs-on: ubuntu-latest
+#     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+#     steps:
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
+#       - name: Stop EC2 runner
+#         uses: machulav/ec2-github-runner@v2
+#         with:
+#           mode: stop
+#           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+#           label: ${{ needs.start-runner.outputs.label }}
+#           ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
   
  
  
