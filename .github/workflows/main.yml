@@ -57,8 +57,7 @@ jobs:
            docker pull linuxserver/calibre
            docker pull binhex/arch-krusader
            docker pull binhex/arch-delugevpn
-           docker pull homeassistant/home-assistant
-           docker pull homeassistant/amd64-hassio-audio
+           docker pull cassandra
            docker pull biocontainers/percolator
            docker pull ibmcom/voice-gateway-codec-g729
            docker pull pachyderm/gpt-2-example
