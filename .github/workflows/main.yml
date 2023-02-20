@@ -54,6 +54,12 @@ jobs:
            docker pull emekaboris/ticktokapp_copy
            docker pull emekaboris/text_generation_with_pytorch
            docker pull emekaboris/summarizerapi3
+           docker pull linuxserver/calibre
+           docker pull binhex/arch-krusader
+           docker pull binhex/arch-delugevpn
+           docker system df -v
+           
+           
            
            # docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
            
