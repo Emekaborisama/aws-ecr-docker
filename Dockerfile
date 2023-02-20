@@ -7,6 +7,6 @@ ADD . /app/
 RUN apt-get update && \
     apt-get install -y git
 RUN pip install -r requirements.txt 
-RUN git clone https://huggingface.co/TsinghuaAI/CPM-Generate
+CMD git clone https://huggingface.co/TsinghuaAI/CPM-Generate
 CMD ["python", "app.py"]
 EXPOSE 8000
