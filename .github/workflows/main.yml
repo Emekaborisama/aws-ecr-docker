@@ -21,6 +21,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Pull github files
+        uses: actions/checkout@v2
       - name: AWS cred
         uses: aws-actions/configure-aws-credentials@v1
         with:
