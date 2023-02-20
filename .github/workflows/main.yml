@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Pull github files
         uses: actions/checkout@v2
+        
+        
+        
       - name: AWS cred
         uses: aws-actions/configure-aws-credentials@v1
         with:
