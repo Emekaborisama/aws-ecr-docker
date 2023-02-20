@@ -32,8 +32,10 @@ jobs:
       - name: Pull github files
         uses: actions/checkout@v2
         
-        
-        
+      - name: check storage volume
+        run: |
+          echo "Free space:"
+          df -h
         
         
       - name: AWS cred
