@@ -2,7 +2,12 @@
 
 
 from flask import Flask,jsonify
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
+tokenizer = AutoTokenizer.from_pretrained("TsinghuaAI/CPM-Generate")
+
+model = AutoModelForCausalLM.from_pretrained("TsinghuaAI/CPM-Generate")
+print(model)
 
 app = Flask(__name__)
 
