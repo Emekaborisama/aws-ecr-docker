@@ -3,10 +3,10 @@ name: Github action for Docker to ECR
 
 on:
  push:
-  branches: main
+  branches: master
  
  pull_request:
-  branches: main
+  branches: master
   
   
 jobs:
