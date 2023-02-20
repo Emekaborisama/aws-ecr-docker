@@ -9,8 +9,8 @@ on:
   branches: main
   
   
-job:
-  name: get pull request or updated code
+jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
