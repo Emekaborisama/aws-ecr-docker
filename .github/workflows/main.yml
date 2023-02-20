@@ -38,6 +38,7 @@ jobs:
           ECR_REPOSITORY: st_cloud_first_version
           IMAGE_TAG: latest
         run: |
+           ls
            # Build a docker container and push it to ECR 
            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
            echo "Pushing image to ECR..."
