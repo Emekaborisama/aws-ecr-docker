@@ -94,38 +94,29 @@ jobs:
            ls
            df -h
            # Build a docker container and push it to ECR 
-           docker pull tensorflow/tensorflow
-           docker pull gettyimages/spark
-           docker pull timescale/timescaledb:latest-pg14
-           docker pull linuxserver/digikam
-           docker pull ich777/krusader
-           docker pull emekaboris/ticktokapp_copy
-           docker pull emekaboris/text_generation_with_pytorch
-           docker pull emekaboris/summarizerapi3
-           docker pull linuxserver/calibre
-           docker pull binhex/arch-krusader
-           docker pull binhex/arch-delugevpn
-           docker pull cassandra
-           docker pull ibmcom/voice-gateway-codec-g729
-           docker pull pachyderm/gpt-2-example
-           docker pull kaveenk/gpt3discord
-           docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
-           docker pull baurjan0224/gpt3
-           docker pull fillsa/powerpc-ubuntu
+           sudo docker pull tensorflow/tensorflow
+           sudo docker pull gettyimages/spark
+           sudo docker pull timescale/timescaledb:latest-pg14
+           sudo docker pull linuxserver/digikam
+           sudo docker pull ich777/krusader
+           sudo docker pull emekaboris/ticktokapp_copy
+           sudo docker pull emekaboris/text_generation_with_pytorch
+           sudo docker pull emekaboris/summarizerapi3
            
            
            
            
            
            
-           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-           docker system df -v --format '{{.ImagesSize}}'
+           
+           sudo docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+           sudo docker system df -v --format '{{.ImagesSize}}'
 
            
-           docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
-           docker images
+           sudo docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+           sudo docker images
            echo "Pushing image to ECR..."
-           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+           sudo docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
            echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
     
