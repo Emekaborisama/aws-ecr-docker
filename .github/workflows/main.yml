@@ -60,8 +60,8 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
+          root-reserve-mb: 512000
+          swap-size-mb: 10240
           remove-dotnet: 'true'
       - name: Checkout
         uses: actions/checkout@v2
@@ -70,6 +70,8 @@ jobs:
         run: |
           echo "Free space:"
           df -h
+          
+          docker rmi `docker images -q`
           docker pull tensorflow/tensorflow
           
             
