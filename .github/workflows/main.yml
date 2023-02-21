@@ -71,6 +71,8 @@ jobs:
         
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          path: aws-ecr-docker
         
       - name: AWS cred
         uses: aws-actions/configure-aws-credentials@v1
