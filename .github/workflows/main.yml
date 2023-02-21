@@ -110,9 +110,8 @@ jobs:
            
            
            sudo docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-           sudo docker system df -v --format '{{.ImagesSize}}'
 
-           
+  
            sudo docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
            sudo docker images
            echo "Pushing image to ECR..."
