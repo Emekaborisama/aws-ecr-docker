@@ -54,12 +54,13 @@ jobs:
           sudo apt clean
           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
           df -h
+
            
-      - name:  Maximize build space
-        uses: easimon/maximize-build-space@v6
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
+#       - name:  Maximize build space
+#         uses: easimon/maximize-build-space@v6
+#         with:
+#           root-reserve-mb: 512
+#           swap-size-mb: 1024
         
         
       - name: Checkout
@@ -75,7 +76,15 @@ jobs:
             aws-region: ${{ secrets.AWS_REGION }}
 
      
-
+                
+      - name: Cache Docker layer
+        uses: actions/cache@v2
+        with:
+          path: |
+            /var/lib/docker
+          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+          
+          
       - name: Build
         id: withfreespace
         run: |
