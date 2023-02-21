@@ -46,9 +46,18 @@ jobs:
             
 
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Maximize Build Space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 51200
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
       
             
   Deploy:
@@ -58,12 +67,12 @@ jobs:
 #     runs-on: ${{ needs.start-runner.outputs.label }}
     
     steps:
-#       - name: Maximize build space
-#         uses: easimon/maximize-build-space@master
-#         with:
-#           root-reserve-mb: 60000
-#           swap-size-mb: 1024
-#           remove-dotnet: 'true'
+# #       - name: Maximize build space
+# #         uses: easimon/maximize-build-space@master
+# #         with:
+# #           root-reserve-mb: 60000
+# #           swap-size-mb: 1024
+# #           remove-dotnet: 'true'
           
       - name: Pull github files
         uses: actions/checkout@v2
@@ -74,48 +83,48 @@ jobs:
           df -h
         
         
-      - name: AWS cred
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
+#       - name: AWS cred
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#             aws-region: ${{ secrets.AWS_REGION }}
             
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
       
-      - name: Build, tag, and push image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: st_cloud_first_version
-          IMAGE_TAG: latest
-        run: |
-           ls
-           df -h
-           # Build a docker container and push it to ECR 
-           sudo docker pull tensorflow/tensorflow
-           sudo docker pull gettyimages/spark
-           sudo docker pull timescale/timescaledb:latest-pg14
-           sudo docker pull linuxserver/digikam
-           sudo docker pull ich777/krusader
-           sudo docker pull emekaboris/ticktokapp_copy
-           sudo docker pull emekaboris/text_generation_with_pytorch
-           sudo docker pull emekaboris/summarizerapi3
+#       - name: Build, tag, and push image to Amazon ECR
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           ECR_REPOSITORY: st_cloud_first_version
+#           IMAGE_TAG: latest
+#         run: |
+#            ls
+#            df -h
+#            # Build a docker container and push it to ECR 
+#            sudo docker pull tensorflow/tensorflow
+#            sudo docker pull gettyimages/spark
+#            sudo docker pull timescale/timescaledb:latest-pg14
+#            sudo docker pull linuxserver/digikam
+#            sudo docker pull ich777/krusader
+#            sudo docker pull emekaboris/ticktokapp_copy
+#            sudo docker pull emekaboris/text_generation_with_pytorch
+#            sudo docker pull emekaboris/summarizerapi3
            
            
            
            
            
            
-           aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 224066078089.dkr.ecr.us-east-2.amazonaws.com
-           sudo docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-           sudo docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
-           sudo docker images
-           df -h
-           echo "Pushing image to ECR..."
-           sudo docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+#            aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 224066078089.dkr.ecr.us-east-2.amazonaws.com
+#            sudo docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#            sudo docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+#            sudo docker images
+#            df -h
+#            echo "Pushing image to ECR..."
+#            sudo docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#            echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
     
 #   stop-runner:
