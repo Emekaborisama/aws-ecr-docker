@@ -81,7 +81,7 @@ jobs:
         run: |
           echo "Free space:"
           ls
-          cd $ {{ GITHUB_WORKSPACE }}
+          echo $ {{ GITHUB_WORKSPACE }}
           
           #docker rmi `docker images -q`
           docker pull tensorflow/tensorflow
