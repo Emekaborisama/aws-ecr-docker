@@ -74,15 +74,15 @@ jobs:
           sudo apt -y autoremove --purge
           sudo apt -y autoclean
           sudo apt clean
-#       - name: Maximize Build Space
-#         uses: easimon/maximize-build-space@v6
-#         with:
-#           root-reserve-mb: 1024
-#           swap-size-mb: 10240
-#           remove-dotnet: 'true'
-#           temp-reserve-mb: 1024
-#           remove-android: 'true'
-#           remove-haskell: 'true'
+      - name: Maximize Build Space
+        uses: easimon/maximize-build-space@v6
+        with:
+          root-reserve-mb: 1024
+          swap-size-mb: 10240
+          remove-dotnet: 'true'
+          temp-reserve-mb: 1024
+          remove-android: 'true'
+          remove-haskell: 'true'
           
       - name: Pull github files
         uses: actions/checkout@v2
@@ -90,8 +90,7 @@ jobs:
       - name: check storage volume
         run: |
           echo "Free space:"
-          #export HOME=${GITHUB_WORKSPACE}
-          #cd ${GITHUB_WORKSPACE}
+          
           pwd
           df --human-readable
           
@@ -113,12 +112,15 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: st_cloud_first_version
           IMAGE_TAG: latest
+          
         run: |
+           export HOME=${GITHUB_WORKSPACE}
+           cd ${GITHUB_WORKSPACE}
            ls
            df -h
            # Build a docker container and push it to ECR 
            # Build a docker container and push it to ECR 
-           #docker pull tensorflow/tensorflow
+           docker pull tensorflow/tensorflow
            docker pull gettyimages/spark
            docker pull timescale/timescaledb:latest-pg14
            docker pull linuxserver/digikam
