@@ -87,11 +87,13 @@ jobs:
         uses: actions/checkout@v2
         
       - name: check storage volume
+        working-directory: ./aws-ecr-docker
         run: |
           echo "Free space:"
           export HOME=${GITHUB_WORKSPACE}
           cd ${GITHUB_WORKSPACE}
-          df
+          df --human-readable
+          
         
         
       - name: AWS cred
