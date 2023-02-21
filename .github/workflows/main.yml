@@ -45,22 +45,22 @@ jobs:
             
             
 
-  FreeSpace:
-    runs-on: ubuntu-20.04
-    steps:
-       - name: Maximize build space
-         uses: easimon/maximize-build-space@master
-         with:
-           root-reserve-mb: 512
-           swap-size-mb: 1024
-           remove-dotnet: 'true'
+#   FreeSpace:
+#     runs-on: ubuntu-20.04
+#     steps:
+#        - name: Maximize build space
+#          uses: easimon/maximize-build-space@master
+#          with:
+#            root-reserve-mb: 512
+#            swap-size-mb: 1024
+#            remove-dotnet: 'true'
 
 
 
 
   build:
     name: Build my artifact
-    needs: FreeSpace
+#     needs: FreeSpace
     runs-on: ubuntu-20.04
     steps:
       
@@ -80,6 +80,7 @@ jobs:
      
 
       - name: Build
+        id: withfreespace
         run: |
           echo "Free space:"
           df -h
@@ -113,7 +114,11 @@ jobs:
           echo "Pushing image to ECR..."
           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
+          
+#       - name: Run with custom runner
+      
+#         if: steps.withfreespace.outcome == 'failure'
+        
         
 
           
