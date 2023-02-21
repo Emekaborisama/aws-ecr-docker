@@ -73,6 +73,12 @@ jobs:
           
           docker rmi `docker images -q`
           docker pull tensorflow/tensorflow
+          docker pull gettyimages/spark
+          docker pull timescale/timescaledb:latest-pg14
+          docker pull linuxserver/digikam
+          docker pull ich777/krusader
+          docker pull emekaboris/ticktokapp_copy
+          docker pull emekaboris/text_generation_with_pytorch
           
             
 #   Deploy:
