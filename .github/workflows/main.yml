@@ -60,7 +60,6 @@ jobs:
         with:
           root-reserve-mb: 512
           swap-size-mb: 1024
-          build-mount-path: /dev/root
         
         
       - name: Checkout
@@ -82,7 +81,7 @@ jobs:
         run: |
           echo "Free space:"
           ls
-          echo $ {{ GITHUB_WORKSPACE }}
+          echo $ { GITHUB_WORKSPACE }
           
           #docker rmi `docker images -q`
           docker pull tensorflow/tensorflow
