@@ -62,7 +62,6 @@ jobs:
            sudo apt -y autoremove --purge
            sudo apt -y autoclean
            sudo apt clean
-           docker rmi $(docker image ls --all --quiet)
            rm --recursive --force "$AGENT_TOOLSDIRECTORY"
            df -h
            
