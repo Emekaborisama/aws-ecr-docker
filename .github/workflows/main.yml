@@ -61,6 +61,15 @@ jobs:
 #         with:
 #           root-reserve-mb: 512
 #           swap-size-mb: 1024
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          large-packages: true
+          swap-storage: true
         
         
       - name: Checkout
@@ -89,6 +98,7 @@ jobs:
         id: withfreespace
         run: |
           echo "Free space:"
+          df -h
           ls
           echo $ { GITHUB_WORKSPACE }
           
