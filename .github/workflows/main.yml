@@ -69,6 +69,7 @@ jobs:
       - name: Remove Useless Package
         run: |
           docker rmi `docker images -q`
+          
           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
           sudo apt -y autoremove --purge
           sudo apt -y autoclean
@@ -117,7 +118,7 @@ jobs:
            df -h
            # Build a docker container and push it to ECR 
            # Build a docker container and push it to ECR 
-           docker pull tensorflow/tensorflow
+           #docker pull tensorflow/tensorflow
            docker pull gettyimages/spark
            docker pull timescale/timescaledb:latest-pg14
            docker pull linuxserver/digikam
