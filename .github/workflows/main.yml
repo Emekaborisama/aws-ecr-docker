@@ -45,22 +45,35 @@ jobs:
             
             
 
-#   FreeSpace:
-#     runs-on: ubuntu-20.04
-#     steps:
-#        - name: Maximize build space
-#          uses: easimon/maximize-build-space@master
-#          with:
-#            root-reserve-mb: 512
-#            swap-size-mb: 1024
-#            remove-dotnet: 'true'
+  FreeSpace:
+    runs-on: ubuntu-20.04
+    steps:
+       - name: Maximize build space
+         uses: easimon/maximize-build-space@master
+         with:
+           root-reserve-mb: 512
+           swap-size-mb: 1024
+           remove-dotnet: 'true'
+           
+       - name: clean unncessary files
+         run: |
+           docker rmi `docker images -q`
+           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+           sudo apt -y autoremove --purge
+           sudo apt -y autoclean
+           sudo apt clean
+           docker rmi $(docker image ls --all --quiet)
+           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+           df -h
+           
+
 
 
 
 
   build:
     name: Build my artifact
-#     needs: FreeSpace
+    needs: FreeSpace
     runs-on: ubuntu-20.04
     steps:
       - name:  Maximize build space
