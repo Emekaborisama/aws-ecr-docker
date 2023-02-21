@@ -61,8 +61,15 @@ jobs:
   build:
     name: Build my artifact
 #     needs: FreeSpace
-    runs-on: ubuntu-20.04
+#     runs-on: ubuntu-20.04
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+#         with:
+#           root-reserve-mb: 512
+#           swap-size-mb: 1024
+#           remove-dotnet: 'true'
+
       
       - name: Checkout
         uses: actions/checkout@v2
@@ -115,9 +122,11 @@ jobs:
           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
-#       - name: Run with custom runner
+      - name: Run with custom runner
+        id: custom_runner_ec2
+          
       
-#         if: steps.withfreespace.outcome == 'failure'
+        if: steps.withfreespace.outcome == 'failure'
         
         
 
