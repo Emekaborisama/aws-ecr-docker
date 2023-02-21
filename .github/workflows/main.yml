@@ -118,7 +118,6 @@ jobs:
           docker pull binhex/arch-delugevpn
           docker pull cassandra
           docker pull ibmcom/voice-gateway-codec-g729
-          docker pull pachyderm/gpt-2-example
           # docker pull kaveenk/gpt3discord
           # docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
           # docker pull baurjan0224/gpt3
