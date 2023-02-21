@@ -89,8 +89,8 @@ jobs:
       - name: check storage volume
         run: |
           echo "Free space:"
-          export HOME=${GITHUB_WORKSPACE}
-          cd ${GITHUB_WORKSPACE}
+          #export HOME=${GITHUB_WORKSPACE}
+          #cd ${GITHUB_WORKSPACE}
           pwd
           df --human-readable
           
