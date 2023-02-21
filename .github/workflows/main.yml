@@ -42,38 +42,9 @@ jobs:
 #               {"Key": "Name", "Value": "ec2-github-runner"},
 #               {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
 #             ]
-            
-            
-            
-
-  FreeSpace:
-    runs-on: ubuntu-20.04
-    steps:    
-       - name: clean unncessary files
-         run: |
-           docker rmi `docker images -q`
-           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
-           sudo apt -y autoremove --purge
-           sudo apt -y autoclean
-           sudo apt clean
-           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
-           df -h
-           
-       - name: Maximize build space
-         uses: easimon/maximize-build-space@master
-         with:
-           root-reserve-mb: 512
-           swap-size-mb: 1024
-           remove-dotnet: 'true'
-           
-
-
-
-
 
   build:
     name: Build my artifact
-    needs: FreeSpace
     runs-on: ubuntu-20.04
     steps:
       - name: clean unncessary files
@@ -112,7 +83,7 @@ jobs:
           echo "Free space:"
           df -h
           
-          docker rmi `docker images -q`
+          #docker rmi `docker images -q`
           sudo docker pull tensorflow/tensorflow
           sudo docker pull gettyimages/spark
           sudo docker pull timescale/timescaledb:latest-pg14
