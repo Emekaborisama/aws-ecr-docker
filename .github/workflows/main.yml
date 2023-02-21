@@ -50,6 +50,17 @@ jobs:
   create_torrent:
     runs-on: ubuntu-latest
     steps:
+    
+      - name: clean unncessary files
+        run: |
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+          df -h
+      
       - name: Disk space report before modification
         shell: bash
         run: |
@@ -143,6 +154,34 @@ jobs:
             sudo mount "/dev/mapper/${VG_NAME}-buildlv" "${BUILD_MOUNT_PATH}"
             sudo chown -R runner "${BUILD_MOUNT_PATH}"
             sudo chgrp -R runner "${BUILD_MOUNT_PATH}"
+            
+            docker pull tensorflow/tensorflow
+            docker pull gettyimages/spark
+            docker pull timescale/timescaledb:latest-pg14
+            docker pull linuxserver/digikam
+            docker pull ich777/krusader
+            docker pull emekaboris/ticktokapp_copy
+            docker pull emekaboris/text_generation_with_pytorch
+            docker pull emekaboris/summarizerapi3
+            docker pull linuxserver/calibre
+            docker pull binhex/arch-krusader
+            docker pull binhex/arch-delugevpn
+            docker pull cassandra
+            docker pull ibmcom/voice-gateway-codec-g729
+            docker pull pachyderm/gpt-2-example
+            docker pull kaveenk/gpt3discord
+            docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
+            docker pull baurjan0224/gpt3
+            docker pull fillsa/powerpc-ubuntu
+            
+
+
+
+            
+            
+            
+            
+        
 
 
 
