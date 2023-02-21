@@ -47,14 +47,7 @@ jobs:
 
   FreeSpace:
     runs-on: ubuntu-20.04
-    steps:
-       - name: Maximize build space
-         uses: easimon/maximize-build-space@master
-         with:
-           root-reserve-mb: 512
-           swap-size-mb: 1024
-           remove-dotnet: 'true'
-           
+    steps:    
        - name: clean unncessary files
          run: |
            docker rmi `docker images -q`
@@ -64,6 +57,13 @@ jobs:
            sudo apt clean
            rm --recursive --force "$AGENT_TOOLSDIRECTORY"
            df -h
+           
+       - name: Maximize build space
+         uses: easimon/maximize-build-space@master
+         with:
+           root-reserve-mb: 512
+           swap-size-mb: 1024
+           remove-dotnet: 'true'
            
 
 
