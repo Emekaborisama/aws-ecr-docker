@@ -86,12 +86,12 @@ jobs:
 
      
                 
-      - name: Cache Docker layer
-        uses: actions/cache@v2
-        with:
-          path: |
-            /var/lib/docker
-          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+#       - name: Cache Docker layer
+#         uses: actions/cache@v2
+#         with:
+#           path: |
+#             /var/lib/docker
+#           key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
           
           
       - name: Build
