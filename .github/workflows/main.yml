@@ -122,11 +122,11 @@ jobs:
           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
-      - name: Run with custom runner
-        id: custom_runner_ec2
+#       - name: Run with custom runner
+#         id: custom_runner_ec2
           
       
-        if: steps.withfreespace.outcome == 'failure'
+#         if: steps.withfreespace.outcome == 'failure'
         
         
 
