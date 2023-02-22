@@ -134,8 +134,8 @@ jobs:
           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
-        shell: bash
-        if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
+#         shell: bash
+#         if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
           
 #       - name: setup ec2 runner
 #         needs: start-runner
