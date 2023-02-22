@@ -1,138 +1,177 @@
 
-name: Github action for Docker to ECR
 
 
+name: do-the-job
 on:
- push:
-  branches: master
-  
-  
-  
+  push:
 jobs:
-
-
-#   start-runner:
-#     name: Start self-hosted EC2 runner
-#     runs-on: ubuntu-latest
-#     outputs:
-#       label: ${{ steps.start-ec2-runner.outputs.label }}
-#       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-#     steps:
-#       - name: Configure AWS credentials
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ secrets.AWS_REGION }}
-#       - name: Start EC2 runner
-#         id: start-ec2-runner
-#         uses: machulav/ec2-github-runner@v2
-#         with:
-#           mode: start
-#           github-token: ${{ secrets.GH_SECRET }}
-#           ec2-image-id: ami-081c3d54ed3ae4f95
-#           ec2-instance-type: t3.2xlarge
-#           subnet-id: subnet-0889726d0af44a2d5
-#           security-group-id: sg-06d6beebb00e6ed24
-# #           iam-role-name: ec2-github-runner-policy # optional, requires additional permissions
-#           aws-resource-tags: > # optional, requires additional permissions
-#             [
-#               {"Key": "Name", "Value": "ec2-github-runner"},
-#               {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
-#             ]
-
-  build:
-    name: Build my artifact
-    runs-on: ubuntu-20.04
+  start-aws-runner:
+    name: start self-hosted ec2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      - name: clean unncessary files
+      
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+      
+      - name: start ec2 runner
+        id: start-ec2-runner
+        uses: satya-500/aws-github-action-runner@v1.1
+        with:
+          mode: start
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          ec2-image-id: ami-00eeedc4036573771
+          ec2-instance-type: t3a.medium
+          subnet-id: subnet-0889726d0af44a2d5
+          security-group-id: sg-06d6beebb00e6ed24
+          aws-resource-tags: >
+            [
+              {"Key": "Name", "Value": "ec2-github-runner"}
+            ]
+  
+  do-the-job:
+    name: do the job on the runner
+    needs: start-aws-runner 
+    runs-on: ${{ needs.start-aws-runner.outputs.label }}
+    steps:
+      - name: test
         run: |
-          docker rmi `docker images -q`
-          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
-          sudo apt -y autoremove --purge
-          sudo apt -y autoclean
-          sudo apt clean
-          rm --recursive --force "$AGENT_TOOLSDIRECTORY"
-          df -h
+          cat /etc/os-release
+  
+  stop-aws-runner:
+    name: stop self-hosted ec2 runner
+    needs:
+      - start-aws-runner
+      - do-the-job
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+      
+      - name: stop ec2 runner
+        uses: satya-500/aws-github-action-runner@v1.1
+        with:
+          mode: stop
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-aws-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-aws-runner.outputs.ec2-instance-id }}
+
+
+
+# name: Github action for Docker to ECR
+
+
+# on:
+#  push:
+#   branches: master
+  
+  
+  
+# jobs:
+
+#   build:
+#     name: Build my artifact
+#     runs-on: ubuntu-20.04
+#     steps:
+#       - name: clean unncessary files
+#         run: |
+#           docker rmi `docker images -q`
+#           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+#           sudo apt -y autoremove --purge
+#           sudo apt -y autoclean
+#           sudo apt clean
+#           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+#           df -h
 
            
-#       - name:  Maximize build space
-#         uses: easimon/maximize-build-space@v6
-#         with:
-#           root-reserve-mb: 512
-#           swap-size-mb: 1024
+# #       - name:  Maximize build space
+# #         uses: easimon/maximize-build-space@v6
+# #         with:
+# #           root-reserve-mb: 512
+# #           swap-size-mb: 1024
 
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
-          large-packages: true
-          swap-storage: true
+#       - name: Free Disk Space (Ubuntu)
+#         uses: jlumbroso/free-disk-space@main
+#         with:
+#           # this might remove tools that are actually needed,
+#           # if set to "true" but frees about 6 GB
+#           tool-cache: false
+#           large-packages: true
+#           swap-storage: true
         
         
-      - name: Checkout
-        uses: actions/checkout@v2
+#       - name: Checkout
+#         uses: actions/checkout@v2
         
-      - name: AWS cred
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
+#       - name: AWS cred
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#             aws-region: ${{ secrets.AWS_REGION }}
             
                    
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
 
 
           
           
-      - name: Build
-        id: withfreespace
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: st_cloud_first_version
-          IMAGE_TAG: latest
-        run: |
-          echo "Free space:"
-          df -h
-          ls
-          echo $ { GITHUB_WORKSPACE }
+#       - name: Build
+#         id: withfreespace
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           ECR_REPOSITORY: st_cloud_first_version
+#           IMAGE_TAG: latest
+#         run: |
+#           echo "Free space:"
+#           df -h
+#           ls
+#           echo $ { GITHUB_WORKSPACE }
           
-          #docker rmi `docker images -q`
-          docker pull tensorflow/tensorflow
-          docker pull gettyimages/spark
-          docker pull timescale/timescaledb:latest-pg14
-          docker pull linuxserver/digikam
-          docker pull ich777/krusader
-          docker pull emekaboris/ticktokapp_copy
-          docker pull emekaboris/text_generation_with_pytorch
-          docker pull emekaboris/summarizerapi3
-          docker pull linuxserver/calibre
-          docker pull binhex/arch-krusader
-          docker pull binhex/arch-delugevpn
-          docker pull kaveenk/gpt3discord
-          docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          df -h
-          docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
-          docker images
-          echo "Pushing image to ECR..."
-          #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+#           #docker rmi `docker images -q`
+#           docker pull tensorflow/tensorflow
+#           docker pull gettyimages/spark
+#           docker pull timescale/timescaledb:latest-pg14
+#           docker pull linuxserver/digikam
+#           docker pull ich777/krusader
+#           docker pull emekaboris/ticktokapp_copy
+#           docker pull emekaboris/text_generation_with_pytorch
+#           docker pull emekaboris/summarizerapi3
+#           docker pull linuxserver/calibre
+#           docker pull binhex/arch-krusader
+#           docker pull binhex/arch-delugevpn
+#           docker pull kaveenk/gpt3discord
+#           docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#           df -h
+#           docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+#           docker images
+#           echo "Pushing image to ECR..."
+#           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
-      - name: setup ec2 runner
-        id: ec2runner
-        if: steps.withfreespace.outcome == 'success'
-        run: |
-          echo "hello"
+#       - name: setup ec2 runner
+#         id: ec2runner
+#         if: steps.withfreespace.outcome == 'success'
+#         run: |
+#           echo "hello"
         
        
           
           
-#       - name: Run with custom runner
+# #       - name: Run with custom runner
       
-#         if: steps.withfreespace.outcome == 'failure'
+# #         if: steps.withfreespace.outcome == 'failure'
