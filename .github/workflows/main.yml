@@ -63,7 +63,7 @@ jobs:
         uses: satya-500/aws-github-action-runner@v1.1
         with:
           mode: stop
-          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          github-token: ${{ secrets.GH_SECRET }}
           label: ${{ needs.start-aws-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-aws-runner.outputs.ec2-instance-id }}
 
