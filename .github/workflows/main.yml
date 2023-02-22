@@ -126,7 +126,7 @@ jobs:
           
       - name: setup ec2 runner
         id: ec2runner
-        if: steps.withfreespace.outcome == 'failure'
+        if: steps.withfreespace.outcome == 'success'
         run: |
           echo "hello"
         
