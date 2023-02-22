@@ -52,25 +52,20 @@ jobs:
 
 
   build:
-    name: Build my artifact
+    name: Run Docker and Push to ECR
     runs-on: ubuntu-20.04
     steps:
-      - name: clean unncessary files
-        run: |
-          docker rmi `docker images -q`
-          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
-          sudo apt -y autoremove --purge
-          sudo apt -y autoclean
-          sudo apt clean
-          rm --recursive --force "$AGENT_TOOLSDIRECTORY"
-          df -h
+#       - name: clean unncessary files to save space
+#         run: |
+#           docker rmi `docker images -q`
+#           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+#           sudo apt -y autoremove --purge
+#           sudo apt -y autoclean
+#           sudo apt clean
+#           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+#           df -h
 
-           
-#       - name:  Maximize build space
-#         uses: easimon/maximize-build-space@v6
-#         with:
-#           root-reserve-mb: 512
-#           swap-size-mb: 1024
+
 
 #       - name: Free Disk Space (Ubuntu)
 #         uses: jlumbroso/free-disk-space@main
@@ -137,13 +132,7 @@ jobs:
 #         shell: bash
 #         if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
           
-#       - name: setup ec2 runner
-#         needs: start-runner
-#         id: ec2runner
-#         if: steps.withfreespace.outcome == 'failure'
-        
-#         run: |
-#           echo "hello"
+
         
    
   
@@ -153,7 +142,7 @@ jobs:
     name: run job
     needs: 
       - start-runner
-      - build # required to start the main job when the runner is ready
+      - build
     if: ${{ failure() }}
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
