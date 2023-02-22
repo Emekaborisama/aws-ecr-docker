@@ -2,72 +2,65 @@
 
 
 name: do-the-job
-on:
-  push:
+on: push
 jobs:
-  start-aws-runner:
-    name: start self-hosted ec2 runner
+  start-runner:
+    name: Start self-hosted EC2 runner
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
-      
-      - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-      
-      - name: start ec2 runner
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Start EC2 runner
         id: start-ec2-runner
-        uses: satya-500/aws-github-action-runner@v1.1
+        uses: machulav/ec2-github-runner@v2
         with:
           mode: start
-          github-token: ${{ secrets.GH_SECRET }}
-          ec2-image-id: ami-05fa3313415a9c7fb
-          ec2-instance-type: t3a.medium
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          ec2-image-id: ami-0d8df0c44d1f75e3a
+          ec2-instance-type: t2.2xlarge
           subnet-id: subnet-0889726d0af44a2d5
           security-group-id: sg-06d6beebb00e6ed24
-          aws-resource-tags: >
+#           iam-role-name: my-role-name # optional, requires additional permissions
+          aws-resource-tags: > # optional, requires additional permissions
             [
-              {"Key": "Name", "Value": "ec2-github-runner"}
+              {"Key": "Name", "Value": "ec2-github-runner"},
+              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
             ]
-  
   do-the-job:
-    name: do the job on the runner
-    needs: start-aws-runner 
-    runs-on: ${{ needs.start-aws-runner.outputs.label }}
+    name: Do the job on the runner
+    needs: start-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
-      - name: test
-        run: |
-          cat /etc/os-release
-  
-  stop-aws-runner:
-    name: stop self-hosted ec2 runner
+      - name: Hello World
+        run: echo 'Hello World!'
+  stop-runner:
+    name: Stop self-hosted EC2 runner
     needs:
-      - start-aws-runner
-      - do-the-job
+      - start-runner # required to get output from the start-runner job
+      - do-the-job # required to wait when the main job is done
     runs-on: ubuntu-latest
-    if: ${{ always() }}
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
-      - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-      
-      - name: stop ec2 runner
-        uses: satya-500/aws-github-action-runner@v1.1
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
         with:
           mode: stop
-          github-token: ${{ secrets.GH_SECRET }}
-          label: ${{ needs.start-aws-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-aws-runner.outputs.ec2-instance-id }}
-
-
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
 
 # name: Github action for Docker to ECR
 
