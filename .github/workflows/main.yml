@@ -91,13 +91,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: st_cloud_first_version
           IMAGE_TAG: latest
-                
-#       - name: Cache Docker layer
-#         uses: actions/cache@v2
-#         with:
-#           path: |
-#             /var/lib/docker
-#           key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+
           
           
       - name: Build
