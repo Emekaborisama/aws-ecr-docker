@@ -94,6 +94,9 @@ jobs:
           echo "Pushing image to ECR..."
           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "prining error message"
+          echo journalctl -b
+          
         continue-on-error: true
 #         shell: bash
 #         if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
