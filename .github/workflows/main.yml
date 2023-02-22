@@ -112,7 +112,7 @@ jobs:
   start-runner:
     name: Start self-hosted EC2 runner
     needs: ECRbuild
-    if: ${{ needs.ECRbuild.ECRtask.output == 'no space left on device' }}
+    if: ${{ needs.ECRbuild.ECRtask.outputs == 'no space left on device' }}
 #     if: ${{ failure() }}
     runs-on: ubuntu-latest
     outputs:
@@ -148,11 +148,13 @@ jobs:
     needs: 
       - start-runner
       - ECRbuild
-    if: ${{ failure() }}
+#     if: ${{ failure() }}
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
       - name: Run task
-        run: ${{needs.ECRbuild.outputs.ECRtask}}
+        run: ${{needs.ECRbuild.ECRtask}}
+#         run: ${{needs.ECRbuild.outputs.ECRtask}}
+
   
   stop-runner:
     name: Stop self-hosted EC2 runner
