@@ -94,7 +94,7 @@ jobs:
           echo "Pushing image to ECR..."
           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          
+        continue-on-error: true
 #         shell: bash
 #         if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
           
@@ -144,9 +144,7 @@ jobs:
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
       - name: Run task
-        run: |
-          echo 'Disk out of space'
-          echo ${{needs.ECRbuild.outputs.ECRtask}}
+        run: ${{needs.ECRbuild.outputs.ECRtask}}
   
   stop-runner:
     name: Stop self-hosted EC2 runner
