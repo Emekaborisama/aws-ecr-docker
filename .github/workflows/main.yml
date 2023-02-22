@@ -92,13 +92,16 @@ jobs:
           docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
           docker images
           echo "Pushing image to ECR..."
-          #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          #echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           echo "prining error message"
           echo journalctl -b
+          status=$(journalctl -b)
+          echo ::set-output name=status::$status
           
-        if: ${{ failure() }}
-        continue-on-error: true
+          
+#         if: ${{ failure() }}
+#         continue-on-error: true
 #         shell: bash
 #         if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
           
