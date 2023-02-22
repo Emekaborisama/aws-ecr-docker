@@ -124,6 +124,14 @@ jobs:
           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
+      - name: setup ec2 runner
+        id: ec2runner
+        if: steps.withfreespace.outcome == 'failure'
+        run: |
+          echo "hello"
+        
+       
+          
           
 #       - name: Run with custom runner
       
