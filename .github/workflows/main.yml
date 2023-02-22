@@ -1,8 +1,20 @@
+  
+  
+  
+  
+  
+  
+
+name: Github action for Docker to ECR
 
 
+on:
+ push:
+  branches: master
+  
+  
+  
 
-name: do-the-job
-on: push
 jobs:
   start-runner:
     name: Start self-hosted EC2 runner
@@ -33,18 +45,128 @@ jobs:
               {"Key": "Name", "Value": "ec2-github-runner"},
               {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
             ]
-  do-the-job:
-    name: Do the job on the runner
-    needs: start-runner # required to start the main job when the runner is ready
+  
+  
+
+
+
+
+  build:
+    name: Build my artifact
+    runs-on: ubuntu-20.04
+    steps:
+      - name: clean unncessary files
+        run: |
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+          df -h
+
+           
+#       - name:  Maximize build space
+#         uses: easimon/maximize-build-space@v6
+#         with:
+#           root-reserve-mb: 512
+#           swap-size-mb: 1024
+
+#       - name: Free Disk Space (Ubuntu)
+#         uses: jlumbroso/free-disk-space@main
+#         with:
+#           # this might remove tools that are actually needed,
+#           # if set to "true" but frees about 6 GB
+#           tool-cache: false
+#           large-packages: true
+#           swap-storage: true
+        
+        
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: AWS cred
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+            
+                   
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+
+          
+          
+      - name: ECRtask
+        id: withfreespace
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: st_cloud_first_version
+          IMAGE_TAG: latest
+        run: |
+          echo "Free space:"
+          df -h
+          ls
+          echo $ { GITHUB_WORKSPACE }
+          
+          #docker rmi `docker images -q`
+          docker pull tensorflow/tensorflow
+          docker pull gettyimages/spark
+          docker pull timescale/timescaledb:latest-pg14
+          docker pull linuxserver/digikam
+          docker pull ich777/krusader
+          docker pull emekaboris/ticktokapp_copy
+          docker pull emekaboris/text_generation_with_pytorch
+          docker pull emekaboris/summarizerapi3
+          docker pull linuxserver/calibre
+          docker pull binhex/arch-krusader
+          docker pull binhex/arch-delugevpn
+          docker pull kaveenk/gpt3discord
+          docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          df -h
+          docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+          docker images
+          echo "Pushing image to ECR..."
+          #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          
+        shell: bash
+        if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
+          
+#       - name: setup ec2 runner
+#         needs: start-runner
+#         id: ec2runner
+#         if: steps.withfreespace.outcome == 'failure'
+        
+#         run: |
+#           echo "hello"
+        
+   
+  
+    
+  
+  ec2-runner-task:
+    name: run job
+    needs: 
+      - start-runner
+      - build # required to start the main job when the runner is ready
+    if: ${{ failure() && contains(needs.build.steps.ECRtask.outputs.stdout, "/dev/root") }}
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
-      - name: Hello World
-        run: echo 'Hello World!'
+      - name: Run task
+        run: |
+          echo 'Disk out of space'
+          echo ${{needs.build.outputs.ECRtask}}
+  
   stop-runner:
     name: Stop self-hosted EC2 runner
     needs:
       - start-runner # required to get output from the start-runner job
-      - do-the-job # required to wait when the main job is done
+      - ec2-runner-task
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
@@ -60,109 +182,7 @@ jobs:
           mode: stop
           github-token: ${{ secrets.GH_SECRET }}
           label: ${{ needs.start-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
-
-# name: Github action for Docker to ECR
-
-
-# on:
-#  push:
-#   branches: master
-  
-  
-  
-# jobs:
-
-#   build:
-#     name: Build my artifact
-#     runs-on: ubuntu-20.04
-#     steps:
-#       - name: clean unncessary files
-#         run: |
-#           docker rmi `docker images -q`
-#           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
-#           sudo apt -y autoremove --purge
-#           sudo apt -y autoclean
-#           sudo apt clean
-#           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
-#           df -h
-
-           
-# #       - name:  Maximize build space
-# #         uses: easimon/maximize-build-space@v6
-# #         with:
-# #           root-reserve-mb: 512
-# #           swap-size-mb: 1024
-
-#       - name: Free Disk Space (Ubuntu)
-#         uses: jlumbroso/free-disk-space@main
-#         with:
-#           # this might remove tools that are actually needed,
-#           # if set to "true" but frees about 6 GB
-#           tool-cache: false
-#           large-packages: true
-#           swap-storage: true
-        
-        
-#       - name: Checkout
-#         uses: actions/checkout@v2
-        
-#       - name: AWS cred
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#             aws-region: ${{ secrets.AWS_REGION }}
-            
-                   
-#       - name: Login to Amazon ECR
-#         id: login-ecr
-#         uses: aws-actions/amazon-ecr-login@v1
-
-
-          
-          
-#       - name: Build
-#         id: withfreespace
-#         env:
-#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-#           ECR_REPOSITORY: st_cloud_first_version
-#           IMAGE_TAG: latest
-#         run: |
-#           echo "Free space:"
-#           df -h
-#           ls
-#           echo $ { GITHUB_WORKSPACE }
-          
-#           #docker rmi `docker images -q`
-#           docker pull tensorflow/tensorflow
-#           docker pull gettyimages/spark
-#           docker pull timescale/timescaledb:latest-pg14
-#           docker pull linuxserver/digikam
-#           docker pull ich777/krusader
-#           docker pull emekaboris/ticktokapp_copy
-#           docker pull emekaboris/text_generation_with_pytorch
-#           docker pull emekaboris/summarizerapi3
-#           docker pull linuxserver/calibre
-#           docker pull binhex/arch-krusader
-#           docker pull binhex/arch-delugevpn
-#           docker pull kaveenk/gpt3discord
-#           docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
-#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-#           df -h
-#           docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
-#           docker images
-#           echo "Pushing image to ECR..."
-#           #docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-#           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          
-#       - name: setup ec2 runner
-#         id: ec2runner
-#         if: steps.withfreespace.outcome == 'success'
-#         run: |
-#           echo "hello"
-        
-       
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}  
           
           
 # #       - name: Run with custom runner
