@@ -142,6 +142,7 @@ jobs:
    
   
   ec2-runner-task:
+  
     name: run job
     needs: 
       - start-runner
@@ -149,7 +150,23 @@ jobs:
     if: ${{ failure() && needs.ECRbuild.steps.ECRTask.outcome != 'success' }}
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
+      - name: AWS cred
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+            
+                   
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Run task
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: st_cloud_first_version
+          IMAGE_TAG: latest
         run: |
           echo "Free space:"
           df -h
