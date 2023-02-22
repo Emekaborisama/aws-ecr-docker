@@ -17,30 +17,66 @@ on:
 
 jobs:
 
+  
+  
+  start-runner:
+    name: Start self-hosted EC2 runner
+    needs: ECRbuild
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.GH_SECRET }}
+          ec2-image-id: ami-0d8df0c44d1f75e3a
+          ec2-instance-type: t2.2xlarge
+          subnet-id: subnet-0889726d0af44a2d5
+          security-group-id: sg-06d6beebb00e6ed24
+#           iam-role-name: my-role-name # optional, requires additional permissions
+          aws-resource-tags: > # optional, requires additional permissions
+            [
+              {"Key": "Name", "Value": "ec2-github-runner"},
+              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
+            ]
+    
+    
+    
+  
   ECRbuild:
     name: Run Docker and Push to ECR
     runs-on: ubuntu-20.04
     steps:
-#       - name: clean unncessary files to save space
-#         run: |
-#           docker rmi `docker images -q`
-#           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
-#           sudo apt -y autoremove --purge
-#           sudo apt -y autoclean
-#           sudo apt clean
-#           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
-#           df -h
+      - name: clean unncessary files to save space
+        run: |
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+          df -h
 
 
 
-#       - name: Free Disk Space (Ubuntu)
-#         uses: jlumbroso/free-disk-space@main
-#         with:
-#           # this might remove tools that are actually needed,
-#           # if set to "true" but frees about 6 GB
-#           tool-cache: false
-#           large-packages: true
-#           swap-storage: true
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          large-packages: true
+          swap-storage: true
         
         
       - name: Checkout
@@ -93,11 +129,8 @@ jobs:
           docker images
           echo "Pushing image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          #echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          echo "prining error message"
-          echo journalctl -b
-          status=$(journalctl -b)
-          echo ::set-output name=status::$status
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
           
           
 #         if: ${{ failure() }}
@@ -109,51 +142,43 @@ jobs:
         
    
   
-  start-runner:
-    name: Start self-hosted EC2 runner
-    needs: ECRbuild
-#     if: ${{ needs.ECRbuild.ECRtask.outputs == 'no space left on device' }}
-    if: ${{ failure() }}
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Start EC2 runner
-        id: start-ec2-runner
-        uses: machulav/ec2-github-runner@v2
-        with:
-          mode: start
-          github-token: ${{ secrets.GH_SECRET }}
-          ec2-image-id: ami-0d8df0c44d1f75e3a
-          ec2-instance-type: t2.2xlarge
-          subnet-id: subnet-0889726d0af44a2d5
-          security-group-id: sg-06d6beebb00e6ed24
-#           iam-role-name: my-role-name # optional, requires additional permissions
-          aws-resource-tags: > # optional, requires additional permissions
-            [
-              {"Key": "Name", "Value": "ec2-github-runner"},
-              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
-            ]
-    
-  
   ec2-runner-task:
     name: run job
     needs: 
       - start-runner
       - ECRbuild
-    if: ${{ failure() }}
+    if: ${{ failure() && needs.ECRbuild.steps.ECRTask.outcome != 'success' }}
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
       - name: Run task
-        run: ${{needs.ECRbuild.ECRtask}}
-#         run: ${{needs.ECRbuild.outputs.ECRtask}}
+        run: |
+          echo "Free space:"
+          df -h
+          ls
+          echo $ { GITHUB_WORKSPACE }
+          
+          #docker rmi `docker images -q`
+          docker pull tensorflow/tensorflow
+          docker pull gettyimages/spark
+          docker pull timescale/timescaledb:latest-pg14
+          docker pull linuxserver/digikam
+          docker pull ich777/krusader
+          docker pull emekaboris/ticktokapp_copy
+          docker pull emekaboris/text_generation_with_pytorch
+          docker pull emekaboris/summarizerapi3
+          docker pull linuxserver/calibre
+          docker pull binhex/arch-krusader
+          docker pull binhex/arch-delugevpn
+          docker pull kaveenk/gpt3discord
+          docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          df -h
+          docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+          docker images
+          echo "Pushing image to ECR..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
 
   
   stop-runner:
