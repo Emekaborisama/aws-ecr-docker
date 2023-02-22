@@ -16,12 +16,9 @@ on:
   
 
 jobs:
-
-  
   
   start-runner:
     name: Start self-hosted EC2 runner
-    needs: ECRbuild
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
