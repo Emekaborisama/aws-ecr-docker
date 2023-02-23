@@ -137,7 +137,7 @@ jobs:
           docker build -t $ECR_REPOSITORY .
           docker tag $ECR_REPOSITORY:$IMAGE_TAG 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        continue-on-error: true
+        
 
           
 
