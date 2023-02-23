@@ -1,0 +1,113 @@
+  
+  
+  
+  
+  
+  
+
+name: Github action for Docker to ECR
+
+
+on:
+ push:
+  branches: master
+  
+  
+  
+
+jobs:
+  
+  
+  ECRbuild:
+    name: Run Docker and Push to ECR
+    runs-on: ubuntu-20.04
+    steps:
+      - name: clean unncessary files to save space
+        run: |
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+          df -h
+
+
+
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          large-packages: true
+          swap-storage: true
+        
+
+        
+      - name: Checkout
+        uses: actions/checkout@v2
+        continue-on-error: true
+        
+      - name: AWS cred
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+        continue-on-error: true
+            
+                   
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        continue-on-error: true
+
+
+          
+          
+      - name: ECRtask
+        id: withfreespace
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: st_cloud_first_version
+          IMAGE_TAG: latest
+        run: |
+          echo "Free space:"
+          df -h
+          ls
+          
+          docker pull tensorflow/tensorflow
+          docker pull gettyimages/spark
+          docker pull timescale/timescaledb:latest-pg14
+          docker pull linuxserver/digikam
+          docker pull ich777/krusader
+          docker pull emekaboris/ticktokapp_copy
+          docker pull emekaboris/text_generation_with_pytorch
+          docker pull emekaboris/summarizerapi3
+          docker pull linuxserver/calibre
+          docker pull binhex/arch-krusader
+          docker pull binhex/arch-delugevpn
+          docker pull kaveenk/gpt3discord
+          docker pull wordpress
+          docker pull postgres
+          docker pull mono
+          docker pull arangodb
+          docker pull jetty
+          docker pull cockroachdb/cockroach
+          docker pull bitnami/cassandra
+          docker pull bitnami/grafana
+          docker pull bitnami/mariadb
+          docker pull bitnami/jupyterhub
+          docker pull bitnami/couchdb
+          docker build -t $ECR_REPOSITORY .
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        
+
+          
+
+          
+
+        
+ 
