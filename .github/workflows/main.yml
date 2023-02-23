@@ -152,6 +152,14 @@ jobs:
 #     if: ${{ failure() && needs.ECRbuild.steps.ECRTask.outcome != 'success' }}
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
+    
+    
+    
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+        
+        
       - name: AWS cred
         uses: aws-actions/configure-aws-credentials@v1
         with:
