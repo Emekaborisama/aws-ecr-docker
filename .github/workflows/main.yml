@@ -121,7 +121,6 @@ jobs:
           docker pull binhex/arch-krusader
           docker pull binhex/arch-delugevpn
           docker pull kaveenk/gpt3discord
-          docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
           docker pull baurjan0224/gpt3
           docker pull fillsa/powerpc-ubuntu
           docker build -t $ECR_REPOSITORY .
