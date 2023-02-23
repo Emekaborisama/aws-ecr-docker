@@ -19,8 +19,8 @@ jobs:
   
   start-runner:
     name: Start self-hosted EC2 runner
-#     needs: ECRbuild
-#     if: ${{ failure() && needs.ECRbuild.steps.ECRTask.outcome != 'success' }}
+    needs: ECRbuild
+    if: ${{ failure() && needs.ECRbuild.steps.ECRTask.outcome != 'success' }}
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -52,92 +52,88 @@ jobs:
     
     
   
-#   ECRbuild:
-#     name: Run Docker and Push to ECR
-#     runs-on: ubuntu-20.04
-#     steps:
-#       - name: clean unncessary files to save space
-#         run: |
-#           docker rmi `docker images -q`
-#           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
-#           sudo apt -y autoremove --purge
-#           sudo apt -y autoclean
-#           sudo apt clean
-#           rm --recursive --force "$AGENT_TOOLSDIRECTORY"
-#           df -h
+  ECRbuild:
+    name: Run Docker and Push to ECR
+    runs-on: ubuntu-20.04
+    steps:
+      - name: clean unncessary files to save space
+        run: |
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/sudo apt/sources.list.d
+          sudo apt -y autoremove --purge
+          sudo apt -y autoclean
+          sudo apt clean
+          rm --recursive --force "$AGENT_TOOLSDIRECTORY"
+          df -h
 
 
 
-#       - name: Free Disk Space (Ubuntu)
-#         uses: jlumbroso/free-disk-space@main
-#         with:
-#           # this might remove tools that are actually needed,
-#           # if set to "true" but frees about 6 GB
-#           tool-cache: false
-#           large-packages: true
-#           swap-storage: true
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          large-packages: true
+          swap-storage: true
         
         
-#       - name: Checkout
-#         uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
         
-#       - name: AWS cred
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#             aws-region: ${{ secrets.AWS_REGION }}
+      - name: AWS cred
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
             
                    
-#       - name: Login to Amazon ECR
-#         id: login-ecr
-#         uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
 
           
           
-#       - name: ECRtask
-#         id: withfreespace
-#         env:
-#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-#           ECR_REPOSITORY: st_cloud_first_version
-#           IMAGE_TAG: latest
-#         run: |
-#           echo "Free space:"
-#           df -h
-#           ls
-#           echo $ { GITHUB_WORKSPACE }
+      - name: ECRtask
+        id: withfreespace
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: st_cloud_first_version
+          IMAGE_TAG: latest
+        run: |
+          echo "Free space:"
+          df -h
+          ls
+          echo $ { GITHUB_WORKSPACE }
           
-#           #docker rmi `docker images -q`
-#           docker pull tensorflow/tensorflow
-#           docker pull gettyimages/spark
-#           docker pull timescale/timescaledb:latest-pg14
-#           docker pull linuxserver/digikam
-#           docker pull ich777/krusader
-#           docker pull emekaboris/ticktokapp_copy
-#           docker pull emekaboris/text_generation_with_pytorch
-#           docker pull emekaboris/summarizerapi3
-#           docker pull linuxserver/calibre
-#           docker pull binhex/arch-krusader
-#           docker pull binhex/arch-delugevpn
-#           docker pull kaveenk/gpt3discord
-#           docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
-#           docker pull baurjan0224/gpt3
-#           docker pull fillsa/powerpc-ubuntu
-#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-#           df -h
-#           docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
-#           echo "Pushing image to ECR..."
-#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-#           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          #docker rmi `docker images -q`
+          docker pull tensorflow/tensorflow
+          docker pull gettyimages/spark
+          docker pull timescale/timescaledb:latest-pg14
+          docker pull linuxserver/digikam
+          docker pull ich777/krusader
+          docker pull emekaboris/ticktokapp_copy
+          docker pull emekaboris/text_generation_with_pytorch
+          docker pull emekaboris/summarizerapi3
+          docker pull linuxserver/calibre
+          docker pull binhex/arch-krusader
+          docker pull binhex/arch-delugevpn
+          docker pull kaveenk/gpt3discord
+          docker pull gkswjdzz/gpt3-kor-based-gpt2-0.3.0
+          docker pull baurjan0224/gpt3
+          docker pull fillsa/powerpc-ubuntu
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          df -h
+          docker tag tensorflow/tensorflow:latest 224066078089.dkr.ecr.us-east-2.amazonaws.com/st_cloud_first_version:latest
+          echo "Pushing image to ECR..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
 
           
-          
-#         if: ${{ failure() }}
-#         continue-on-error: true
-#         shell: bash
-#         if: ${{contains(steps.ECRtask.outputs.stdout, "/dev/root")}}
+
           
 
         
@@ -148,8 +144,8 @@ jobs:
     name: run job
     needs: 
       - start-runner
-#       - ECRbuild
-#     if: ${{ failure() && needs.ECRbuild.steps.ECRTask.outcome != 'success' }}
+      - ECRbuild
+    if: ${{ failure() && needs.ECRbuild.steps.ECRTask.outcome != 'success' }}
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
     steps:
     
