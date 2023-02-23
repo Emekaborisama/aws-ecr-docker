@@ -1,0 +1,26 @@
+name: Github action for Docker
+
+
+on:
+ push:
+  branches: master
+  
+  
+  
+
+
+jobs:
+  
+  build:
+    name: pull docker image 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Docker_Image_pull
+        id: withfreespace
+        run: |
+          ls
+          docker pull tensorflow/tensorflow 
+          docker images
